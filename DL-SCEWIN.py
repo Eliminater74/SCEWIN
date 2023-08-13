@@ -24,7 +24,7 @@ def download_innoextract(output_path: str) -> None:
                 file.extract("innoextract.exe", output_path)
 
 
-def zip_folder(folder_path: str, zip_path: str):
+def zip_folder(folder_path: str, zip_path: str) -> None:
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
         for root, _, files in os.walk(folder_path):
             for file in files:
