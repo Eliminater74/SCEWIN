@@ -24,15 +24,6 @@ def download_innoextract(output_path: str) -> None:
                 file.extract("innoextract.exe", output_path)
 
 
-def zip_folder(folder_path: str, zip_path: str) -> None:
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for root, _, files in os.walk(folder_path):
-            for file in files:
-                file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, folder_path)  # preserve folder structure
-                zipf.write(file_path, arcname)
-
-
 def main() -> int:
     download_innoextract("C:\\Windows")
 
@@ -86,7 +77,7 @@ def main() -> int:
         for script in ("Import.bat", "Export.bat"):
             shutil.copy2(f"{script}", f"{scewin_path}\\{folder}")
 
-    zip_folder(scewin_path, "SCEWIN.zip")
+    shutil.move(scewin_path, os.path.dirname(__file__))
 
     return 0
 

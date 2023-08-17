@@ -23,6 +23,9 @@ jobs:
       - name: Run script
         run: python DL-SCEWIN.py
 
+      - name: Zip SCEWIN folder
+        run: Compress-Archive -Path SCEWIN -DestinationPath SCEWIN.zip
+
       - name: Upload to release
         uses: softprops/action-gh-release@v1
         env:
