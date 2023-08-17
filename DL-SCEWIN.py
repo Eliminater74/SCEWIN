@@ -1,8 +1,11 @@
+import glob
 import os
+import re
 import shutil
 import subprocess
 import sys
 import zipfile
+from distutils.spawn import find_executable
 
 import requests
 
@@ -25,59 +28,82 @@ def download_innoextract(output_path: str) -> None:
 
 
 def main() -> int:
-    download_innoextract("C:\\Windows")
+    if find_executable("innoextract") is None:
+        download_innoextract("C:\\Windows")
+
+    MSI_CENTER_ZIP = f"{os.environ['TEMP']}\\MSI-Center.zip"
+    EXTRACT_PATH = f"{os.environ['TEMP']}\\MSI-Center"
 
     response = requests.get("https://download.msi.com/uti_exe/gaming-gear/MSI-Center.zip")
-    file_path = f"{os.environ['TEMP']}\\MSI-Center.zip"
-    extract_path = f"{os.environ['TEMP']}\\MSI-Center"
-    center_version = ""
 
-    with open(file_path, "wb") as file:
+    # Download MSI Center
+    with open(MSI_CENTER_ZIP, "wb") as file:
         file.write(response.content)
 
-    os.makedirs(extract_path, exist_ok=True)
+    os.makedirs(EXTRACT_PATH, exist_ok=True)
 
-    with zipfile.ZipFile(file_path, "r") as file:
-        file.extractall(extract_path)
+    with zipfile.ZipFile(MSI_CENTER_ZIP, "r") as file:
+        file.extractall(EXTRACT_PATH)
 
-    for file in os.listdir(extract_path):
-        if file.endswith(".exe"):
-            center_version = file.strip("MSI Center_.exe")
-            subprocess.call(["innoextract", f"{extract_path}\\{file}", "--output-dir", extract_path])
+    MSI_CENTER_INSTALLER = glob.glob(f"{EXTRACT_PATH}\\MSI Center_*.exe")
 
-    center_appx_path = f"MSI%20Center_{center_version}_x64.appx"
+    if not MSI_CENTER_INSTALLER:
+        print("error: MSI Center executable installer not found")
+        return 1
 
-    for file in os.listdir(f"{extract_path}\\app"):
-        if file.endswith(".appxbundle"):
-            with zipfile.ZipFile(f"{extract_path}\\app\\{file}", "r") as file:
-                file.extract(center_appx_path, extract_path)
+    # get version from file name
+    MATCH = re.search(r"_([\d.]+)\.exe$", os.path.basename(MSI_CENTER_INSTALLER[0]))
 
-    center_sdk_path = "DCv2/Package/MSI%20Center%20SDK.exe"
+    if not MATCH:
+        print("error: Failed to obtain MSI Center version")
+        return 1
 
-    with zipfile.ZipFile(f"{extract_path}\\{center_appx_path}", "r") as file:
-        file.extract(center_sdk_path, extract_path)
+    MSI_CENTER_VERSION = MATCH.group(1)
 
-    subprocess.call(["innoextract", f"{extract_path}\\{center_sdk_path}", "--output-dir", extract_path])
+    subprocess.call(["innoextract", MSI_CENTER_INSTALLER[0], "--output-dir", EXTRACT_PATH])
 
-    prepackage_path = f"{extract_path}\\tmp\\PrePackage"
+    APPXBUNDLE = glob.glob(f"{EXTRACT_PATH}\\app\\*.appxbundle")
 
-    for file in os.listdir(prepackage_path):
-        if "Engine Lib" in file:
-            subprocess.call(["innoextract", f"{prepackage_path}\\{file}", "--output-dir", extract_path])
+    if not APPXBUNDLE:
+        print("error: Appx bundle file not found")
+        return 1
 
-    scewin_path = f"{extract_path}\\app\\Lib\\SCEWIN"
+    APPX_FILE_NAME = f"MSI%20Center_{MSI_CENTER_VERSION}_x64.appx"
 
-    for folder in os.listdir(scewin_path):
+    with zipfile.ZipFile(APPXBUNDLE[0], "r") as file:
+        file.extract(APPX_FILE_NAME, EXTRACT_PATH)
+
+    MSI_CENTER_SDK_PATH = "DCv2/Package/MSI%20Center%20SDK.exe"
+
+    with zipfile.ZipFile(f"{EXTRACT_PATH}\\{APPX_FILE_NAME}", "r") as file:
+        file.extract(MSI_CENTER_SDK_PATH, EXTRACT_PATH)
+
+    subprocess.call(["innoextract", f"{EXTRACT_PATH}\\{MSI_CENTER_SDK_PATH}", "--output-dir", EXTRACT_PATH])
+
+    PREPACKAGE_PATH = f"{EXTRACT_PATH}\\tmp\\PrePackage"
+
+    ENGINE_LIB_INSTALLER = glob.glob(f"{PREPACKAGE_PATH}\\Engine Lib_*.exe")
+
+    if not ENGINE_LIB_INSTALLER:
+        print("error: Engine Lib installer not found")
+        return 1
+
+    subprocess.call(["innoextract", ENGINE_LIB_INSTALLER[0], "--output-dir", EXTRACT_PATH])
+
+    SCEWIN_PATH = f"{EXTRACT_PATH}\\app\\Lib\\SCEWIN"
+
+    # remove residual files
+    for folder in os.listdir(SCEWIN_PATH):
         for file in ("BIOSData.db", "BIOSData.txt", "SCEWIN.bat"):
             try:
-                os.remove(f"{scewin_path}\\{folder}\\{file}")
+                os.remove(f"{SCEWIN_PATH}\\{folder}\\{file}")
             except FileNotFoundError:
                 pass
 
         for script in ("Import.bat", "Export.bat"):
-            shutil.copy2(f"{script}", f"{scewin_path}\\{folder}")
+            shutil.copy2(f"{script}", f"{SCEWIN_PATH}\\{folder}")
 
-    shutil.move(scewin_path, os.path.dirname(__file__))
+    shutil.move(SCEWIN_PATH, os.path.dirname(__file__))
 
     return 0
 
