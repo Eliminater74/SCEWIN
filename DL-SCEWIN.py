@@ -92,18 +92,23 @@ def main() -> int:
 
     SCEWIN_PATH = f"{EXTRACT_PATH}\\app\\Lib\\SCEWIN"
 
+    SCEWIN_VERSION_FOLDER = glob.glob(f"{SCEWIN_PATH}\\*\\")
+
+    if not SCEWIN_VERSION_FOLDER:
+        print("error: SCEWIN version folder not found")
+        return 1
+
     # remove residual files
-    for folder in os.listdir(SCEWIN_PATH):
-        for file in ("BIOSData.db", "BIOSData.txt", "SCEWIN.bat"):
-            try:
-                os.remove(f"{SCEWIN_PATH}\\{folder}\\{file}")
-            except FileNotFoundError:
-                pass
+    for file in ("BIOSData.db", "BIOSData.txt", "SCEWIN.bat"):
+        try:
+            os.remove(f"{SCEWIN_VERSION_FOLDER[0]}\\{file}")
+        except FileNotFoundError:
+            pass
 
-        for script in ("Import.bat", "Export.bat"):
-            shutil.copy2(f"{script}", f"{SCEWIN_PATH}\\{folder}")
+    for script in ("Import.bat", "Export.bat"):
+        shutil.copy2(f"{script}", SCEWIN_VERSION_FOLDER[0])
 
-    shutil.move(SCEWIN_PATH, os.path.dirname(__file__))
+    shutil.move(SCEWIN_PATH, ".")
 
     return 0
 
