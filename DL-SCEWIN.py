@@ -106,7 +106,7 @@ def main() -> int:
             pass
 
     for script in ("Import.bat", "Export.bat"):
-        shutil.copy2(f"{script}", SCEWIN_VERSION_FOLDER[0])
+        shutil.copy2(script, SCEWIN_VERSION_FOLDER[0])
 
     shutil.move(SCEWIN_PATH, ".")
 

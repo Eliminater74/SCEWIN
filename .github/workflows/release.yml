@@ -1,8 +1,9 @@
-name: Create release
+name: Update
 
 on:
-  release:
-    types: [published]
+  schedule:
+    - cron: "0 0 31 * *"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -23,12 +24,25 @@ jobs:
       - name: Run script
         run: python DL-SCEWIN.py
 
+      - name: Check for update
+        run: |
+          $response = Invoke-RestMethod "https://api.github.com/repos/amitxv/Testing/releases/latest"
+          $local_version = Get-ChildItem -Path .\SCEWIN\ -Directory | Select-Object -First 1 -ExpandProperty Name
+
+          if ($response.name -eq $local_version) {
+            Write-Host "info: latest version already posted"
+            exit 1
+          } else {
+            Add-Content -Path $env:GITHUB_ENV -Value "local_version=$local_version"
+          }
+
       - name: Zip SCEWIN folder
         run: Compress-Archive -Path SCEWIN -DestinationPath SCEWIN.zip
 
-      - name: Upload to release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Create release
+        uses: ncipollo/release-action@v1
         with:
-          files: SCEWIN.zip
+          artifacts: SCEWIN.zip
+          name: ${{ env.local_version }}
+          tag: ${{ env.local_version }}
+          token: ${{ secrets.GH_TOKEN }}
