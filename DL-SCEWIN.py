@@ -11,13 +11,13 @@ import requests
 
 
 def download_innoextract(output_path: str) -> None:
-    response = requests.get("https://api.github.com/repos/dscharrer/innoextract/releases/latest")
+    response = requests.get("https://api.github.com/repos/dscharrer/innoextract/releases/latest", timeout=5)
     data = response.json()
 
     for asset in data["assets"]:
         file_name = asset["name"]
         if file_name.endswith("windows.zip"):
-            response = requests.get(asset["browser_download_url"])
+            response = requests.get(asset["browser_download_url"], timeout=5)
             file_path = f"{os.environ['TEMP']}\\{file_name}"
 
             with open(file_path, "wb") as file:
@@ -34,7 +34,7 @@ def main() -> int:
     MSI_CENTER_ZIP = f"{os.environ['TEMP']}\\MSI-Center.zip"
     EXTRACT_PATH = f"{os.environ['TEMP']}\\MSI-Center"
 
-    response = requests.get("https://download.msi.com/uti_exe/gaming-gear/MSI-Center.zip")
+    response = requests.get("https://download.msi.com/uti_exe/gaming-gear/MSI-Center.zip", timeout=5)
 
     # Download MSI Center
     with open(MSI_CENTER_ZIP, "wb") as file:
