@@ -26,7 +26,7 @@ jobs:
 
       - name: Check for update
         run: |
-          $response = Invoke-RestMethod "https://api.github.com/repos/amitxv/Testing/releases/latest"
+          $response = Invoke-RestMethod "https://api.github.com/repos/amitxv/SCEWIN/releases/latest"
           $local_version = Get-ChildItem -Path .\SCEWIN\ -Directory | Select-Object -First 1 -ExpandProperty Name
 
           if ($response.name -eq $local_version) {
