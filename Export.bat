@@ -1,5 +1,5 @@
 @echo off
-:: Request administrator priviliges
+:: Request administrator privilieges
 fltmc >nul 2>&1 || (
     echo info: administrator privileges are required.
     PowerShell Start -Verb RunAs '%0' 2> nul || (
