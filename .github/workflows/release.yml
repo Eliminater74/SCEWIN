@@ -4,9 +4,6 @@ on:
   schedule:
     - cron: "0 0 31 * *"
   workflow_dispatch:
-    inputs:
-      manually_force:
-        description: "Manually force the update"
 
 jobs:
   build:
@@ -34,14 +31,14 @@ jobs:
           Add-Content -Path $env:GITHUB_ENV -Value "local_version=$local_version"
 
       - name: Check for update
-        run:
+        run: |
           $remote_version = Invoke-RestMethod "https://api.github.com/repos/amitxv/SCEWIN/releases/latest"
 
           if ($remote_version.name -eq ${{ env.local_version }}) {
             Write-Host "info: latest version already posted"
             exit 1
           }
-        if: $env:GITHUB_EVENT_NAME -ne "workflow_dispatch"
+        if: github.event_name != 'workflow_dispatch'
 
       - name: Zip SCEWIN folder
         run: Compress-Archive -Path SCEWIN -DestinationPath SCEWIN.zip
