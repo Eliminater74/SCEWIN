@@ -32,7 +32,7 @@ jobs:
 
               Add-Content -Path $env:GITHUB_ENV -Value "local_version=$local_version"
 
-              if ($remote_version.name -eq ${{ env.local_version }}) {
+              if ($remote_version.name -eq $local_version) {
                   Write-Host "info: latest version already posted"
                   exit 1
               }
