@@ -32,13 +32,16 @@ jobs:
 
       - name: Check for update
         run: |
-          $remote_version = Invoke-RestMethod "https://api.github.com/repos/amitxv/SCEWIN/releases/latest"
+          try {
+              $remote_version = Invoke-RestMethod "https://api.github.com/repos/amitxv/SCEWIN/releases/latest"
 
-          if ($remote_version.name -eq ${{ env.local_version }}) {
-            Write-Host "info: latest version already posted"
-            exit 1
+              if ($remote_version.name -eq ${{ env.local_version }}) {
+                  Write-Host "info: latest version already posted"
+                  exit 1
+              }
+          } catch [System.Net.WebException] {
+              # release does not exist
           }
-        if: github.event_name != 'workflow_dispatch'
 
       - name: Zip SCEWIN folder
         run: Compress-Archive -Path SCEWIN -DestinationPath SCEWIN.zip
