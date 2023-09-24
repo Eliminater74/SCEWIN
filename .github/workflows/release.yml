@@ -26,11 +26,12 @@ jobs:
 
       - name: Check for update
         run: |
+          $local_version = Get-ChildItem -Path .\SCEWIN\ -Directory | Select-Object -First 1 -ExpandProperty Name
+
+          Add-Content -Path $env:GITHUB_ENV -Value "local_version=$local_version"
+
           try {
               $remote_version = Invoke-RestMethod "https://api.github.com/repos/amitxv/SCEWIN/releases/latest"
-              $local_version = Get-ChildItem -Path .\SCEWIN\ -Directory | Select-Object -First 1 -ExpandProperty Name
-
-              Add-Content -Path $env:GITHUB_ENV -Value "local_version=$local_version"
 
               if ($remote_version.name -eq $local_version) {
                   Write-Host "info: latest version already posted"
