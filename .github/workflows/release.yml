@@ -37,7 +37,7 @@ jobs:
                   Write-Host "info: latest version already posted"
                   exit 1
               }
-          } catch [System.Net.WebException] {
+          } catch {
               # release does not exist
           }
 
