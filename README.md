@@ -102,10 +102,11 @@ To fix this error:
 This error occurs:
 
 1. The variable to be updated is write-protected
+2. ``PCI Device`` has been disabled in Device Manager
 
 To fix this error:
 
-1. ``PCI Device`` has been disabled in Device Manager
+1. Enable ``PCI Device``s as follows:
 
     - Open Device Manager by typing ``devmgmt.msc`` in ``Win+R``
     - Navigate to ``Other devices``
@@ -134,7 +135,7 @@ This error occurs:
 
 To fix this error:
 
-2. Comment out the setting or resolve the error manually
+1. Comment out the setting or resolve the error manually
 
 ### Warning: Unmatched question... prompt: 'Setup Question', Token:' '
 
