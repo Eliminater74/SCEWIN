@@ -2,6 +2,10 @@
 
 SCEWIN is a tool to modify BIOS NVRAM variables including options that are not visible through UEFI. As far as I know, it is exclusively shipped with MSI Center. This repository was created to provide the SCEWIN binaries without installing the MSI bloatware so that you don't have to.
 
+## Disclaimer
+
+This project is NOT owned, supported or endorsed by [American Megatrends (AMI)](https://www.ami.com). Improper use could cause system instability. Use at your own risk.
+
 ## Usage
 
 1. Run the ``Export.bat`` script to export NVRAM setting values to ``nvram.txt``
