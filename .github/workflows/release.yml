@@ -31,7 +31,7 @@ jobs:
           $local_version = Get-ChildItem -Path .\SCEWIN\ -Directory | Select-Object -First 1 -ExpandProperty Name
           echo "Local version: $local_version"
           
-          $remote_version = Invoke-RestMethod "https://api.github.com/repos/amitxv/SCEWIN/releases/latest"
+          $remote_version = Invoke-RestMethod "https://api.github.com/repos/Eliminater74/SCEWIN/releases/latest"
           echo "Remote version: $($remote_version.name)"
           
           if ($remote_version.name -eq $local_version) {
