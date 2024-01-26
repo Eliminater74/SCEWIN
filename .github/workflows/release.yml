@@ -46,8 +46,17 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git tag ${{ env.local_version }} || echo "Tag already exists"
-          git push origin ${{ env.local_version }} || echo "Failed to push tag"
+          $TAG_NAME = "${{ env.local_version }}"
+          echo "TAG_NAME: $TAG_NAME"
+          git fetch --tags
+          if (-not (git tag -l | Select-String -Pattern "^$TAG_NAME$")) {
+              echo "Creating new tag: $TAG_NAME"
+              git tag $TAG_NAME
+              git push origin $TAG_NAME
+          } else {
+              echo "Tag $TAG_NAME already exists."
+          }
+        shell: pwsh
 
       - name: Zip SCEWIN folder
         if: env.SKIP_RELEASE != 'true'
