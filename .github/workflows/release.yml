@@ -2,8 +2,8 @@ name: Update
 
 on:
   schedule:
-    - cron: "0 0 31 * *"
-  workflow_dispatch:
+    - cron: '0 0 31 * *'  # Runs at 00:00 on the 31st of each month, if it exists
+  workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8.6
+          python-version: '3.8.6'
 
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
@@ -27,18 +27,19 @@ jobs:
       - name: Check for update
         run: |
           $local_version = Get-ChildItem -Path .\SCEWIN\ -Directory | Select-Object -First 1 -ExpandProperty Name
-
+          echo "Local version: $local_version"
           Add-Content -Path $env:GITHUB_ENV -Value "local_version=$local_version"
 
           try {
               $remote_version = Invoke-RestMethod "https://api.github.com/repos/Eliminater74/SCEWIN/releases/latest"
+              echo "Remote version: $($remote_version.name)"
 
               if ($remote_version.name -eq $local_version) {
-                  Write-Host "info: latest version already posted"
-                  exit 1
+                  Write-Host "Info: Latest version already posted."
+                  exit 0
               }
           } catch {
-              # release does not exist
+              Write-Host "Info: No existing release found or error in retrieving."
           }
 
       - name: Zip SCEWIN folder
