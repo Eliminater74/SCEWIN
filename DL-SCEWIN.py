@@ -6,7 +6,6 @@ import subprocess
 import sys
 import zipfile
 from distutils.spawn import find_executable
-
 import requests
 
 def download_file(url: str, destination: str) -> None:
@@ -103,5 +102,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     try:
-        sys.exit(main())
-    except
+        sys.exit(main())  # Ensure this line is correctly formatted
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        sys.exit(1)
