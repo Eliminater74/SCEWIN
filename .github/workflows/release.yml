@@ -42,6 +42,14 @@ jobs:
               echo "SKIP_RELEASE=false" >> $GITHUB_ENV
           }
 
+      - name: Create Tag if Necessary
+        if: env.SKIP_RELEASE != 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag ${{ env.local_version }} || echo "Tag already exists"
+          git push origin ${{ env.local_version }} || echo "Failed to push tag"
+
       - name: Zip SCEWIN folder
         if: env.SKIP_RELEASE != 'true'
         run: Compress-Archive -Path SCEWIN -DestinationPath SCEWIN.zip
