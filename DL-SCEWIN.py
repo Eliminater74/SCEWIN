@@ -10,7 +10,7 @@ import requests
 
 def download_file(url: str, destination: str) -> None:
     with requests.get(url, timeout=5) as response:
-        response.raise_for_status()  # This will raise an HTTPError if the HTTP request returned an unsuccessful status code.
+        response.raise_for_status()
         with open(destination, "wb") as file:
             file.write(response.content)
 
@@ -38,11 +38,6 @@ def get_msi_center_version(file_path: str) -> str:
         raise ValueError("Failed to obtain MSI Center version from filename.")
     return version_match.group(1)
 
-def innoextract(command: list) -> None:
-    result = subprocess.run(command, capture_output=True)
-    if result.returncode != 0:
-        raise subprocess.CalledProcessError(result.returncode, command, output=result.stdout, stderr=result.stderr)
-
 def main() -> int:
     if find_executable("innoextract") is None:
         download_innoextract("C:\\Windows")
@@ -57,32 +52,36 @@ def main() -> int:
 
     msi_center_installers = glob.glob(os.path.join(extract_path, "MSI Center_*.exe"))
     if not msi_center_installers:
-        raise FileNotFoundError("MSI Center executable installer not found.")
+        print("error: MSI Center executable installer not found")
+        return 1
 
     msi_center_version = get_msi_center_version(msi_center_installers[0])
-    innoextract(["innoextract", msi_center_installers[0], "--output-dir", extract_path])
+    subprocess.call(["innoextract", msi_center_installers[0], "--output-dir", extract_path])
 
     appx_bundle = glob.glob(os.path.join(extract_path, "app", "*.appxbundle"))
     if not appx_bundle:
-        raise FileNotFoundError("Appx bundle file not found.")
+        print("error: Appx bundle file not found")
+        return 1
 
     appx_file_name = f"MSI Center_{msi_center_version}_x64.appx"
     extract_zip(appx_bundle[0], extract_path)
 
-    msi_center_sdk_path = os.path.join(extract_path, "DCv2/Package/MSI Center SDK.exe")
-    innoextract(["innoextract", msi_center_sdk_path, "--output-dir", extract_path])
+    msi_center_sdk_path = os.path.join(extract_path, f"DCv2/Package/MSI Center SDK.exe")
+    subprocess.call(["innoextract", msi_center_sdk_path, "--output-dir", extract_path])
 
     prepackage_path = os.path.join(extract_path, "tmp/PrePackage")
     engine_lib_installers = glob.glob(os.path.join(prepackage_path, "Engine Lib_*.exe"))
     if not engine_lib_installers:
-        raise FileNotFoundError("Engine Lib installer not found.")
+        print("error: Engine Lib installer not found")
+        return 1
 
-    innoextract(["innoextract", engine_lib_installers[0], "--output-dir", extract_path])
+    subprocess.call(["innoextract", engine_lib_installers[0], "--output-dir", extract_path])
 
     scewin_path = os.path.join(extract_path, "app/Lib/SCEWIN")
     scewin_version_folders = glob.glob(os.path.join(scewin_path, "*"))
     if not scewin_version_folders:
-        raise FileNotFoundError("SCEWIN version folder not found.")
+        print("error: SCEWIN version folder not found")
+        return 1
 
     # Clean up residual files
     for file_name in ("BIOSData.db", "BIOSData.txt", "SCEWIN.bat"):
@@ -102,7 +101,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     try:
-        sys.exit(main())  # Ensure this line is correctly formatted
+        sys.exit(main())
     except Exception as e:
         print(f"An error occurred: {e}")
         sys.exit(1)
