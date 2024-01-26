@@ -42,13 +42,20 @@ jobs:
               echo "SKIP_RELEASE=false" >> $GITHUB_ENV
           }
 
-      - name: Create Tag if Necessary
+      - name: Create or Use Tag for Release
         if: env.SKIP_RELEASE != 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git tag ${{ env.local_version }} || echo "Tag already exists"
-          git push origin ${{ env.local_version }} || echo "Failed to push tag"
+          TAG_NAME=${{ env.local_version }}
+          echo "Checking for tag: $TAG_NAME"
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+              echo "Tag $TAG_NAME already exists."
+          else
+              echo "Creating new tag: $TAG_NAME"
+              git tag $TAG_NAME
+              git push origin $TAG_NAME
+          fi
 
       - name: Zip SCEWIN folder
         if: env.SKIP_RELEASE != 'true'
