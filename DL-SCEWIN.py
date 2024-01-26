@@ -105,7 +105,7 @@ def main() -> int:
         except FileNotFoundError:
             pass
 
-    for script in ("Import.bat", "Export.bat"):
+    for script in ("RunMe.bat", "README.md"):
         shutil.copy2(script, SCEWIN_VERSION_FOLDER[0])
 
     shutil.move(SCEWIN_PATH, ".")
