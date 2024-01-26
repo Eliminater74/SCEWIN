@@ -46,10 +46,11 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          $TAG_NAME = "${{ env.local_version }}"
+          $TAG_NAME="${{ env.local_version }}"
           echo "TAG_NAME: $TAG_NAME"
           git fetch --tags
-          if (-not (git tag -l | Select-String -Pattern "^$TAG_NAME$")) {
+          $tagExists = git tag -l | Select-String -Pattern "^$TAG_NAME$"
+          if ($null -eq $tagExists) {
               echo "Creating new tag: $TAG_NAME"
               git tag $TAG_NAME
               git push origin $TAG_NAME
