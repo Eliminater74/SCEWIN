@@ -25,7 +25,6 @@ jobs:
         run: python DL-SCEWIN.py
 
       - name: Check for update
-        id: check-update
         run: |
           $ErrorActionPreference = 'Stop'
           $local_version = Get-ChildItem -Path .\SCEWIN\ -Directory | Select-Object -First 1 -ExpandProperty Name
@@ -42,20 +41,13 @@ jobs:
               echo "SKIP_RELEASE=false" >> $GITHUB_ENV
           }
 
-      - name: Create or Use Tag for Release
+      - name: Create Tag if Necessary
         if: env.SKIP_RELEASE != 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          TAG_NAME=${{ env.local_version }}
-          echo "Checking for tag: $TAG_NAME"
-          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-              echo "Tag $TAG_NAME already exists."
-          else
-              echo "Creating new tag: $TAG_NAME"
-              git tag $TAG_NAME
-              git push origin $TAG_NAME
-          fi
+          git tag ${{ env.local_version }} || echo "Tag already exists"
+          git push origin ${{ env.local_version }} || echo "Failed to push tag"
 
       - name: Zip SCEWIN folder
         if: env.SKIP_RELEASE != 'true'
