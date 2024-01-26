@@ -43,12 +43,15 @@ jobs:
           }
 
       - name: Zip SCEWIN folder
-        run: Compress-Archive -Path SCEWIN -DestinationPath SCEWIN.zip
+        run: |
+          $zipFileName = "SCEWIN_$($env:local_version).zip"
+          Compress-Archive -Path SCEWIN -DestinationPath $zipFileName
+          echo "zipFileName=$zipFileName" >> $GITHUB_ENV
 
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: SCEWIN.zip
+          artifacts: ${{ env.zipFileName }}
           name: ${{ env.local_version }}
           tag: ${{ env.local_version }}
           token: ${{ secrets.GH_TOKEN }}
